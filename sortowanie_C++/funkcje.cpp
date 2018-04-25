@@ -33,7 +33,7 @@ void dodawanie(T *&tab, int &rozmiar)
 	{
 		tablica[i] = tab[i];
 	}
-	//delete tab;
+
 	tab = new int[nowy_rozmiar];
 	for (int i = 0; i < rozmiar; i++)
 	{
@@ -49,9 +49,12 @@ void dodawanie(T *&tab, int &rozmiar)
 	{
 		tab[i] = rand() % przedzial + zakres;
 	}
-	//delete rozmiar;
 	rozmiar = nowy_rozmiar;
 }
+
+ /*
+* Algorytm sortowania Quicksort
+*/
 
 template <typename T>
 int podzial(T *tab, int pierwszy, int ostatni)
@@ -90,8 +93,9 @@ void quicksort(T *tablica, int p, int r) // sortowanie szybkie
 	}
 }
 
-
-//podzial tablicy
+/*
+* Algorytm sortowania przez scalanie
+*/
 
 template <typename T>
 void laczenie_sc(T *tab, int pierwszy, int srodek, int ostatni)
@@ -100,20 +104,17 @@ void laczenie_sc(T *tab, int pierwszy, int srodek, int ostatni)
 	int *t = new int[ostatni + 1];
 	for (i = pierwszy; i <= ostatni; i++)
 		t[i] = tab[i];  // Skopiowanie danych do tablicy pomocniczej
-	i = pierwszy; j = srodek + 1; q = pierwszy;                 // Ustawienie wska�nik�w tablic
-	while (i <= srodek && j <= ostatni) {		  // Przenoszenie danych z sortowaniem ze zbior�w pomocniczych do tablicy g��wnej
+	i = pierwszy; j = srodek + 1; q = pierwszy;                 // Ustawienie wskaznikow tablic
+	while (i <= srodek && j <= ostatni) {		  // Przenoszenie danych z sortowaniem ze zbiorow pomocniczych do tablicy glownej
 		if (t[i]<t[j])
 			tab[q++] = t[i++];
 		else
 			tab[q++] = t[j++];
 	}
-	while (i <= srodek)  tab[q++] = t[i++];	// Przeniesienie nie skopiowanych danych ze zbioru pierwszego w przypadku, gdy drugi zbi�r si� sko�czy�
+	while (i <= srodek)  tab[q++] = t[i++];	// Przeniesienie nie skopiowanych danych ze zbioru pierwszego w przypadku, gdy drugi zbioru sie skoonczy
 	delete[]t;
 }
 
-/*
-* Algorytm sortowania przez scalanie
-*/
 
 template <typename T>
 void scalanie(T *tab, int pierwszy, int ostatni)
@@ -123,87 +124,63 @@ void scalanie(T *tab, int pierwszy, int ostatni)
 		srodek = (pierwszy + ostatni) / 2;
 		scalanie(tab, pierwszy, srodek);    // Dzielenie lewej czesci
 		scalanie(tab, srodek + 1, ostatni);   // Dzielenie prawej czesci
-		laczenie_sc(tab, pierwszy, srodek, ostatni);   // 
+		laczenie_sc(tab, pierwszy, srodek, ostatni);   
 	}
 }
-
+/*
+* Algorytm sortowanie introsort
+*/
 template <typename T>
-void fixHeap(T *tab, int korzen, int bottom)
+void IntroSort(T *tab, int p, int k)
 {
-	bool done;
-	int maxChild, tmp;
-	done = false;
-	while ((korzen * 2 <= bottom) && (!done))
+	int wywolania = podzial(tab, p, k);
+	if (wywolania >(2 * log(k)))
 	{
-		if (korzen * 2 == bottom)
-			maxChild = korzen * 2;
-		else if (tab[korzen * 2] > tab[korzen * 2 + 1])
-			maxChild = korzen * 2;
-		else
-			maxChild = korzen * 2 + 1;
-
-		if (tab[korzen] < tab[maxChild])
-		{
-			tmp = tab[korzen];
-			tab[korzen] = tab[maxChild];
-			tab[maxChild] = tmp;
-			korzen = maxChild;
-
-		}
-		else
-			done = true;
+		sortowanie_przez_kopcowanie(tab, k);
+	}
+	else
+	{
+		quicksort(tab, p, k);
 	}
 }
 
+template <typename T>
+void MaxH(T *tab, int rozm, int k)
+{
+	int l = (k + 1) * 2 - 1;
+	int r = (k + 1) * 2;
+	int najwiekszy = 0;
 
-template <typename T>
-void _swap(T *a, T *b) {
-	T save = *a;
-	*a = *b;
-	*b = save;
-}
-template <typename T>
-void heapsort(T *tab, int pierwszy, int ostatni) {
-	int i;
-	for (int i = (ostatni - 1) / 2; i >= pierwszy; i--) {
-		fixHeap(tab, i, ostatni - 1);
-	}
-	for (i = ostatni - 1; i>pierwszy; i--) {
-		_swap(&tab[i], &tab[pierwszy]);
-		fixHeap(tab, pierwszy, i - 1);
-	}
-}
+	if (l < rozm && tab[l] > tab[k])
+		najwiekszy = l;
+	else
+		najwiekszy = k;
 
+	if (r < rozm && tab[r] > tab[najwiekszy])
+		najwiekszy = r;
 
-template <typename T>
-void introsort_r(T *tab, int pierwszy, int ostatni, int glebokosc) {
-	while (ostatni - pierwszy > 0) {
-		if (glebokosc = 0)
-			heapsort(&tab[pierwszy], pierwszy, ostatni - pierwszy + 1);
-		else {
-			int pivot;
-			if (sprawdzenie(tab, ostatni))
-				break;
-			pivot = podzial(tab, pierwszy, ostatni);
-			introsort_r(tab, pivot + 1, ostatni, glebokosc - 1);
-			ostatni = pivot - 1;
-		}
+	if (najwiekszy != k)
+	{
+		int temp = tab[k];
+		tab[k] = tab[najwiekszy];
+		tab[najwiekszy] = temp;
+
+		MaxH(tab, rozm, najwiekszy);
 	}
 }
 template <typename T>
-void wstawianie(T *tab, int n) {
-	int i;
-	for (i = 1; i < n; i++) {
-		int j, save = tab[i];
-		for (j = i; j >= 1 && tab[j - 1] > save; j--)
-			tab[j] = tab[j - 1];
-		tab[j] = save;
+void sortowanie_przez_kopcowanie(T *tab, int k)
+{
+	int rozm = k;
+	for (int p = (rozm - 1) / 2; p >= 0; --p)
+		MaxH(tab, rozm, p);
+
+	for (int i = k - 1; i > 0; --i)
+	{
+		swap(tab[i], tab[0]);
+			--rozm;
+		MaxH(tab, rozm, 0);
 	}
-}
-template <typename T>
-void _introsort(T *tab, int n) {
-	introsort_r(tab, 0, n - 1, (int(2 * log(double(n)))));
-	wstawianie(tab, n);
 }
 template <typename T>
 bool sprawdzenie(T *tab, int rozmiar)
